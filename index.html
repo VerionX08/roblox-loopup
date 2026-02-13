@@ -1,89 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roblox Account Lookup</title>
+
 <style>
 body {
+  margin: 0;
   background: #0f0f0f;
+  font-family: Arial, sans-serif;
   color: white;
-  font-family: Arial;
   text-align: center;
   padding: 40px;
 }
-input {
-  padding: 10px;
-  width: 200px;
+
+h1 {
+  color: #00ff88;
 }
+
+input {
+  padding: 12px;
+  width: 250px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
 button {
-  padding: 10px 15px;
-  cursor: pointer;
+  padding: 12px 18px;
+  margin-left: 8px;
   background: #00ff88;
   border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
 }
+
+button:hover {
+  background: #00cc6a;
+}
+
 #card {
-  margin-top: 30px;
-  padding: 20px;
+  margin-top: 40px;
+  padding: 25px;
   background: #1a1a1a;
   display: inline-block;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,255,136,0.3);
+  animation: fadeIn 0.4s ease-in-out;
 }
+
 img {
-  border-radius: 8px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.loading {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.error {
+  margin-top: 20px;
+  color: red;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
+
 <body>
 
-<h2>Roblox Account Lookup</h2>
+<h1>Roblox Account Lookup</h1>
+<p>Tra cứu thông tin tài khoản Roblox</p>
 
-<input type="text" id="username" placeholder="Nhập username">
+<input type="text" id="username" placeholder="Nhập username...">
 <button onclick="lookup()">Tìm</button>
 
 <div id="result"></div>
 
 <script>
 async function lookup() {
-  const username = document.getElementById("username").value;
+  const username = document.getElementById("username").value.trim();
   const resultDiv = document.getElementById("result");
-  resultDiv.innerHTML = "Đang tải...";
 
-  const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      usernames: [username],
-      excludeBannedUsers: false
-    })
-  });
-
-  const userData = await userRes.json();
-
-  if (!userData.data.length) {
-    resultDiv.innerHTML = "Không tìm thấy user.";
+  if (!username) {
+    resultDiv.innerHTML = "<div class='error'>Vui lòng nhập username</div>";
     return;
   }
 
-  const userId = userData.data[0].id;
+  resultDiv.innerHTML = "<div class='loading'>Đang tải...</div>";
 
-  const profileRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-  const profile = await profileRes.json();
+  try {
+    const res = await fetch(`/api/user?username=${encodeURIComponent(username)}`);
+    const data = await res.json();
 
-  const avatarRes = await fetch(
-    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`
-  );
-  const avatarData = await avatarRes.json();
-  const avatarUrl = avatarData.data[0].imageUrl;
+    if (data.error) {
+      resultDiv.innerHTML = `<div class='error'>${data.error}</div>`;
+      return;
+    }
 
-  resultDiv.innerHTML = `
-    <div id="card">
-      <h3>${profile.name}</h3>
-      <img src="${avatarUrl}" width="150">
-      <p>User ID: ${userId}</p>
-      <p>Display Name: ${profile.displayName}</p>
-      <p>Created: ${new Date(profile.created).toLocaleDateString()}</p>
-    </div>
-  `;
+    resultDiv.innerHTML = `
+      <div id="card">
+        <h2>${data.name}</h2>
+        <img src="${data.avatar}" width="160">
+        <p><b>User ID:</b> ${data.id}</p>
+        <p><b>Display Name:</b> ${data.displayName}</p>
+        <p><b>Ngày tạo:</b> ${new Date(data.created).toLocaleDateString()}</p>
+      </div>
+    `;
+
+  } catch (err) {
+    resultDiv.innerHTML = "<div class='error'>Lỗi server</div>";
+  }
 }
 </script>
 
