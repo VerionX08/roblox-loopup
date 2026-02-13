@@ -1,14 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Roblox Lookup</title>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: Arial; text-align: center; background: #111; color: white; }
-    input { padding: 10px; }
-    button { padding: 10px; cursor: pointer; }
-    img { margin-top: 10px; }
-  </style>
+<meta charset="UTF-8">
+<title>Roblox Account Lookup</title>
+<style>
+body {
+  background: #0f0f0f;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding: 40px;
+}
+input {
+  padding: 10px;
+  width: 200px;
+}
+button {
+  padding: 10px 15px;
+  cursor: pointer;
+  background: #00ff88;
+  border: none;
+}
+#card {
+  margin-top: 30px;
+  padding: 20px;
+  background: #1a1a1a;
+  display: inline-block;
+  border-radius: 10px;
+}
+img {
+  border-radius: 8px;
+}
+</style>
 </head>
 <body>
 
@@ -23,7 +46,6 @@
 async function lookup() {
   const username = document.getElementById("username").value;
   const resultDiv = document.getElementById("result");
-
   resultDiv.innerHTML = "Đang tải...";
 
   const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
@@ -54,117 +76,14 @@ async function lookup() {
   const avatarUrl = avatarData.data[0].imageUrl;
 
   resultDiv.innerHTML = `
-    <h3>${profile.name}</h3>
-    <img src="${avatarUrl}" width="150">
-    <p>User ID: ${userId}</p>
-    <p>Display Name: ${profile.displayName}</p>
-    <p>Created: ${new Date(profile.created).toLocaleDateString()}</p>
+    <div id="card">
+      <h3>${profile.name}</h3>
+      <img src="${avatarUrl}" width="150">
+      <p>User ID: ${userId}</p>
+      <p>Display Name: ${profile.displayName}</p>
+      <p>Created: ${new Date(profile.created).toLocaleDateString()}</p>
+    </div>
   `;
-}
-</script>
-
-</body>
-</html>    margin-bottom: 12px;
-  }
-
-  button {
-    width: 100%;
-    padding: 16px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 12px;
-    border: none;
-    background: #00ffcc;
-    cursor: pointer;
-  }
-
-  .status {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #ffcc00;
-  }
-
-  img {
-    margin-top: 14px;
-    width: 100%;
-    border-radius: 12px;
-    display: none;
-  }
-
-  .link {
-    margin-top: 10px;
-    font-size: 12px;
-    word-break: break-all;
-    color: #00ffcc;
-  }
-</style>
-</head>
-
-<body>
-
-<div class="box">
-  <h2>RBX Asset → Image</h2>
-  <input id="asset" placeholder="rbxassetid://123 hoặc ID số">
-  <button onclick="convert()">CHECK</button>
-
-  <div id="status" class="status"></div>
-  <img id="img">
-  <div id="link" class="link"></div>
-</div>
-
-<script>
-let retry = 0;
-const MAX_RETRY = 10;
-
-function convert() {
-  const input = document.getElementById("asset").value.trim();
-  if (!input) return;
-
-  const id = input.replace("rbxassetid://", "");
-  const status = document.getElementById("status");
-  const img = document.getElementById("img");
-  const link = document.getElementById("link");
-
-  retry = 0;
-  img.style.display = "none";
-  link.innerText = "";
-
-  check(id);
-
-  async function check(assetId) {
-    status.innerText = `🔎 Đang kiểm tra (${retry}/${MAX_RETRY})`;
-
-    const api = `https://thumbnails.roblox.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`;
-    const res = await fetch(api);
-    const json = await res.json();
-
-    if (!json.data || !json.data[0]) {
-      status.innerText = "❌ Không tìm thấy asset";
-      return;
-    }
-
-    const data = json.data[0];
-
-    if (data.state === "Pending") {
-      retry++;
-      if (retry >= MAX_RETRY) {
-        status.innerText = "⏰ Pending quá lâu";
-        return;
-      }
-      setTimeout(() => check(assetId), 2000);
-      return;
-    }
-
-    if (data.state !== "Completed" || !data.imageUrl) {
-      status.innerText = `❌ Asset không khả dụng (${data.state})`;
-      return;
-    }
-
-    img.src = data.imageUrl;
-    img.style.display = "block";
-    link.innerText = data.imageUrl;
-    status.innerText = "✅ Asset sẵn sàng";
-  }
 }
 </script>
 
